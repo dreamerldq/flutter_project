@@ -1,8 +1,9 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'provider.dart';
+import 'todo.dart';
 
 class Toolbar extends ConsumerWidget {
   const Toolbar({
@@ -11,19 +12,21 @@ class Toolbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filter = ref.watch(todoListFilter);
-
     Color? textColorFor(TodoListFilter value) {
+      final filter = BlocProvider.of<TodoListState>(context).state.filterState;
       return filter == value ? Colors.blue : Colors.black;
     }
 
     return Material(
-      child: Row(
+        child: BlocBuilder<TodoListState, TodoModel>(builder: (context, state) {
+      final uncompletedTodosCount =
+          state.todos.where((todo) => !todo.completed).length;
+      return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: Text(
-              '还有${ref.watch(uncompletedTodosCount).toString()}个未完成',
+              '还有${(uncompletedTodosCount).toString()}个未完成',
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -31,8 +34,8 @@ class Toolbar extends ConsumerWidget {
             key: allFilterKey,
             message: '全部',
             child: TextButton(
-              onPressed: () =>
-                  ref.read(todoListFilter.notifier).state = TodoListFilter.all, //点击的时候修改筛选的状态
+              onPressed: () => BlocProvider.of<TodoListState>(context)
+                  .changeState(TodoListFilter.all), //点击的时候修改筛选的状态
               style: ButtonStyle(
                 visualDensity: VisualDensity.compact,
                 foregroundColor:
@@ -45,8 +48,8 @@ class Toolbar extends ConsumerWidget {
             key: activeFilterKey,
             message: '未完成',
             child: TextButton(
-              onPressed: () => ref.read(todoListFilter.notifier).state =
-                  TodoListFilter.active,
+              onPressed: () => BlocProvider.of<TodoListState>(context)
+                  .changeState(TodoListFilter.active),
               style: ButtonStyle(
                 visualDensity: VisualDensity.compact,
                 foregroundColor: MaterialStateProperty.all(
@@ -58,10 +61,10 @@ class Toolbar extends ConsumerWidget {
           ),
           Tooltip(
             key: completedFilterKey,
-            message:'已完成',
+            message: '已完成',
             child: TextButton(
-              onPressed: () => ref.read(todoListFilter.notifier).state =
-                  TodoListFilter.completed,
+              onPressed: () => BlocProvider.of<TodoListState>(context)
+                  .changeState(TodoListFilter.completed),
               style: ButtonStyle(
                 visualDensity: VisualDensity.compact,
                 foregroundColor: MaterialStateProperty.all(
@@ -72,7 +75,7 @@ class Toolbar extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
+      );
+    }));
   }
 }

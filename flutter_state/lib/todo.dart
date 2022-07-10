@@ -1,8 +1,5 @@
 import 'package:flutter/foundation.dart' show immutable;
-import 'package:riverpod/riverpod.dart';
-import 'package:uuid/uuid.dart';
 
-const _uuid = Uuid();
 
 /// A read-only description of a todo-item
 @immutable
@@ -23,34 +20,26 @@ class Todo {
   }
 }
 
-class TodoList extends StateNotifier<List<Todo>> {
-  TodoList([List<Todo>? initialTodos]) : super(initialTodos ?? []); //提供一个todoList的初始值
+enum TodoListFilter {
+  all,
+  active,
+  completed,
+}
 
-  void add(String description) {
-    state = [ // state代表TodoList对象的返回值，每次返回都是一个新的对象
-      ...state,
-      Todo(
-        id: _uuid.v4(),
-        description: description,
-      ),
-    ];
-  }
-
-  void toggle(String id) {
-    state = [
-      for (final todo in state)
-        if (todo.id == id)
-          Todo(
-            id: todo.id,
-            completed: !todo.completed,
-            description: todo.description,
-          )
-        else
-          todo,
-    ];
-  }
-
-  void remove(Todo target) {
-    state = state.where((todo) => todo.id != target.id).toList();
+class TodoModel{
+  TodoModel({required this.todos, required this.filterState});
+  List<Todo> todos = [];
+  // List<Todo> filterTodos;
+  TodoListFilter filterState = TodoListFilter.all;
+  TodoModel copyWith({
+    List<Todo>? todos,
+    List<Todo>?filterTodos,
+    TodoListFilter? filterState,
+  }) {
+    return TodoModel(
+      todos: todos ?? this.todos,
+      // filterTodos:filterTodos?? this.filterTodos,
+      filterState: filterState ?? this.filterState,
+    );
   }
 }
